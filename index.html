@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Elemental card game</title>
+</head>
+<body>
+    <div class="hand--playable">
+        <div class="card card--playable card--playable__hover" onclick="SelectCard(this)" id="1">
+            <div class="card-container--upgrade">
+                <div class="card card--upgrade" onclick="Upgrade(this, 2)">
+    
+                </div>
+                <div class="card card--upgrade" onclick="Upgrade(this, 2)">
+    
+                </div>
+                <div class="card card--upgrade" onclick="Upgrade(this, 2)">
+    
+                </div>
+            </div>
+        </div>
+        <div class="card card--playable card--playable__hover" onclick="SelectCard(this)" id="2">
+            <div class="card-container--upgrade">
+                <div class="card card--upgrade" onclick="Upgrade(this, 5)" onload="">
+    
+                </div>
+                <div class="card card--upgrade" onclick="Upgrade(this, 5)">
+    
+                </div>
+                <div class="card card--upgrade" onclick="Upgrade(this, 5)">
+    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="resource-text" id="resource-text">
+        
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>

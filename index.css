@@ -1,0 +1,67 @@
+:root {
+    --card-width: 140px;
+    --card-height: 240px;
+    --card-margin: 10px;
+    --card-upgrade-offset: 30px;
+    --card-hand-offset: 15px;
+}
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 95vh;
+}
+
+.hand--playable {
+    width: 700px;
+    height: var(--card-height);
+    background-color: rgba(243, 194, 72, 0.688);
+
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    
+    padding: var(--card-hand-offset);
+}
+
+.card-container--upgrade {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-around;
+    
+    width: calc((var(--card-width) + var(--card-margin)) * 3);
+
+    pointer-events: none;
+}
+
+.card {
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: rgba(0, 0, 255, 0.803);
+
+    margin: var(--card-margin);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card--playable__hover:hover {
+    background-color: rgb(0, 115, 255);
+}
+
+.card--upgrade {
+    pointer-events: all;
+    visibility: hidden;
+
+    background-color: rgb(255, 82, 102);
+    transform: translateY(calc((var(--card-height) + var(--card-upgrade-offset)) * -1));
+}
+
+.card--upgrade:hover {
+    background-color: rgb(255, 22, 49);
+}
