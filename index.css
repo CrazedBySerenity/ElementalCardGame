@@ -1,9 +1,14 @@
 :root {
-    --card-width: 140px;
-    --card-height: 240px;
+    --card-width: 80px;
+    --card-height: 120px;
     --card-margin: 10px;
     --card-upgrade-offset: 30px;
     --card-hand-offset: 15px;
+
+    --fire-color: lightsalmon;
+    --earth-color: burlywood;
+
+    /* Replace all pixel values with units instead */
 }
 
 
@@ -15,16 +20,175 @@ body {
     height: 95vh;
 }
 
+.ability-area {
+    width: 480px;
+    height: 90px;
+    background-color: aliceblue;
+}
+
+.ability--fire {
+    position: absolute;
+
+    width: 30px;
+    height: 60px;
+
+    background-color: red;
+    border-radius: 50% 50% 20px 20px;
+
+    animation: FireForward 100ms ease-in forwards;
+}
+
+@keyframes FireForward {
+    0% {
+        transform: translateY(-75px);
+    }
+    100% {
+        transform: translateY(-200px);
+    }
+}
+
+.ability--earth {
+    position: absolute;
+
+    width: 100px;
+    height: 40px;
+
+    background-color: burlywood;
+
+    border-radius: 25px;
+
+    transform: translateY(-150px);
+}
+
+.movement-area {
+    width: 480px;
+    height: 200px;
+    
+    background-color: lightgray;
+
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+/*  box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px; */
+}
+
+.movement-area__position {
+    height: 180px;
+    width: 150px;
+    margin: 10px;
+
+    background-color: rgb(150, 150, 150);
+
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+}
+
+.player {
+    width: 80px;
+    height: 120px;
+
+    background-color: lightgreen;
+
+    border-radius: 15px;
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+}
+
+.movement-arrow {
+    position: absolute;
+    width: 0; 
+    height: 0; 
+    border-top: 50px solid transparent;
+    border-bottom: 50px solid transparent;
+    
+    border-left: 50px solid rgba(255, 59, 59, 0.436);
+}
+
+.movement-arrow:hover {
+    border-left-color: red;
+}
+
+.movement-arrow--right {
+    transform: translate(90px, 10px);
+
+}
+
+.movement-arrow--left {
+    transform: translate(-60px, 10px) rotate(180deg);
+}
+
+.hand-board__container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+}
+
 .hand--playable {
     width: 700px;
     height: var(--card-height);
-    background-color: rgba(243, 194, 72, 0.688);
+    background-color: rgb(202, 202, 202);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+
+    
+    padding: var(--card-hand-offset);
+
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+    /* box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px; */
+}
+
+.board__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.board {
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: rgba(72, 243, 112, 0.688);
+    border-radius: 15px;
 
     display: flex;
     align-items: center;
     flex-direction: row;
+    justify-content: center;
     
     padding: var(--card-hand-offset);
+    
+    margin-left: 20px;
+    margin-bottom: 20px;
+
+    box-shadow: rgb(53, 56, 59, 0.5) 3px 3px 6px 1px inset, rgba(50, 50, 50, 0.5) -3px -3px 6px 1px inset;
+
+}
+
+.board__btn {
+    background-color: lightcoral;
+    color: white;
+    padding: 10px;
+    border-radius: 15px;
+
+    width: 80px;
+
+    user-select: none;
+
+    transition: all 500ms;
+
+    text-align: center;
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+}
+
+.board__btn:hover {
+    transform: scale(1.05);
 }
 
 .card-container--upgrade {
@@ -41,22 +205,32 @@ body {
 .card {
     width: var(--card-width);
     height: var(--card-height);
-    background-color: rgba(0, 0, 255, 0.803);
+    background-color: rgb(77, 196, 255);
 
     margin: var(--card-margin);
 
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    border-radius: 15px;
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
 }
 
-.card--playable__hover:hover {
-    background-color: rgb(0, 115, 255);
+.card--earth {
+    background-color: var(--earth-color);
+}
+
+.card--fire {
+    background-color: var(--fire-color);
+}
+
+.card--playable:hover {
+    background-color: rgb(255, 255, 221);
 }
 
 .card--upgrade {
     pointer-events: all;
-    visibility: hidden;
 
     background-color: rgb(255, 82, 102);
     transform: translateY(calc((var(--card-height) + var(--card-upgrade-offset)) * -1));
@@ -64,4 +238,12 @@ body {
 
 .card--upgrade:hover {
     background-color: rgb(255, 22, 49);
+}
+
+.visible {
+    visibility: visible;
+}
+
+.hidden {
+    display: none;
 }
