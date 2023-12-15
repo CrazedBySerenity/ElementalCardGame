@@ -17,10 +17,17 @@ const board = document.getElementById("board");
 const baseCards = document.getElementsByClassName("card--playable");
 const dropZones = document.getElementsByClassName("drop-zone");
 
+// Player variables
+let playerPosition = 1;
+let canMove = true;
+
 // Add cards to cardsInPlay array when they're dropped in the corresponding container, on play, make the cards be used up and their effect be triggered
 const cardsInPlay = [];
 
 let curDraggedElement = null;
+let curUpgradeElement = null;
+
+let upgradeMenuOpen = false;
 
 let curResources = 100;
 let curUpgradeCards = null;
@@ -65,47 +72,43 @@ const EarthEffect = () => {
 
 // 3 5 7 11 13 17 23 31
 
-const cardDatabase = [
-    {
+const cardDatabase = {
+    3: {
         id: 3,
-        cardType: "Fire",
+        type: "Fire",
         cost: 20,
         dmg: 2,
         callback: FireEffect,
         next: [4, 6],
     },
-    {
+    4: {
         id: 4,
-        cardType: "Fire",
+        type: "Fire",
         cost: 20,
         dmg: 4,
         callback: FireEffect,
         next: null,
     },
-    {
+    6: {
         id: 6,
-        cardType: "Fire",
+        type: "Fire",
         cost: 60,
         dmg: 8,
         callback: FireEffect,
         next: null,
     },
-    {
+    5: {
         id: 5,
-        cardType: "Earth",
+        type: "Earth",
         cost: 50,
         callback: EarthEffect,
         next: null,
     },
-]
+}
 
-// CardElement property, parent, cardCost, cardType, playable, children []
+// element property, parent, cost, type, playable, children []
 // Replace this with a tree structure?
 const allCards = {};
-
-// Player variables
-let playerPosition = 1;
-let canMove = true;
 
 class CardEffect {
     constructor(name){
@@ -172,6 +175,9 @@ for(let i = 0; i < baseCards.length; i++){
     curCard.addEventListener("dragstart", (event) => {
         console.log(event);
         curDraggedElement = curCard;
+        if(upgradeMenuOpen && curUpgradeElement){
+            curUpgradeElement.container.remove();
+        }
     })
     let id = curCard.classList.contains("card--fire") ? 3 : 5;
     CardSetup(curCard, id);
@@ -201,24 +207,25 @@ for(let i = 0; i < dropZones.length; i++){
                 console.log(cardsInPlay);
             }
         }
+        if(upgradeMenuOpen && curUpgradeElement){
+            DrawUpgradeUI(curDraggedElement);
+        }
         curDraggedElement = null;
     })
 }
 
 function CardSetup(element, cardID) {
     console.log("Initialised card from id: " + cardID);
-    let baseCard = cardDatabase.find((card) => {
-        return card.id == cardID;
-    });
+    let baseCard = cardDatabase[cardID]
     if(!baseCard){
         console.log("Card could not be found based on given card-id");
     }
     let newPlayID = crypto.randomUUID();
     element.setAttribute("id", newPlayID);
     let newCard = {
-        cardElement: element,
-        cardCost: baseCard.cost,
-        cardType: baseCard.cardType,
+        element: element,
+        cost: baseCard.cost,
+        type: baseCard.type,
         callback: baseCard.callback,
         playable: false,
         baseID: cardID,
@@ -226,50 +233,181 @@ function CardSetup(element, cardID) {
 
     };
     allCards[newPlayID] = newCard;
+    DrawCardText(element);
     console.log(allCards);
 }
 
-function Upgrade(element, cardID) {
+function Upgrade(element, cardUpgrade) {
     console.log(element);
+    console.log(cardUpgrade);
 
-    let cost = cardDatabase.find((card) => {
-        return card.id == cardID;
-    }).cost;
-    if(cost > curResources){
+    let cost = cardUpgrade.cost;
+    if(cardUpgrade.cost > curResources){
         alert("You don't have enough resources to upgrade this card");
         return;
     }
     curResources -= cost;
     resourceText.textContent = "Resources: " + curResources;
+    
+    // Replace parent element with upgrade
 
-    // Untested
-    console.log(cardDatabase);
+    let newPlayID = crypto.randomUUID();
+    cardUpgrade.parent.setAttribute("id", newPlayID);
+
+    delete allCards[cardUpgrade.parentID];
+    allCards[newPlayID] = cardUpgrade;
+    allCards[newPlayID].playID = newPlayID;
+    DrawCardText(cardUpgrade.parent);
+
+    if(cardUpgrade.next){
+        curUpgradeElement == null;
+        DrawUpgradeUI(cardUpgrade.parent);
+    }
+    else{
+        DrawUpgradeUI(cardUpgrade.parent);
+    }
 }
+
+function DrawUpgradeUI (element) {
+    
+    // Disable menu if already open and the same element is clicked on
+
+    if(!element || element.type == "resize"){
+        if(!curUpgradeElement || !curUpgradeElement.element){
+            upgradeMenuOpen = false;
+            return;
+        }
+        console.log(curUpgradeElement.element)
+        element = curUpgradeElement.element;
+    }
+
+    if(curUpgradeElement){
+        curUpgradeElement.container.remove();
+        if(curUpgradeElement.element == element){
+            console.log("Menu closing")
+            upgradeMenuOpen = false;
+            curUpgradeElement = null;
+            return;
+        }
+        // Set upgradeMenuOpen to false and skip the rest?
+    }
+
+    if(cardDatabase[allCards[element.id].baseID].next){
+
+        // Opening menu
+
+        console.log("Opening upgrade menu");
+
+        let upgradeContainer = document.createElement("div");
+        upgradeContainer.classList.add("card-container--upgrade");
+        element.parentElement.parentElement.appendChild(upgradeContainer);
+        let rect = element.getBoundingClientRect();
+        let containerRect = upgradeContainer.getBoundingClientRect();
+        upgradeContainer.style.left = rect.left - containerRect.width / 2 + rect.width / 2 + "px";
+        upgradeContainer.style.top = rect.y - containerRect.height - 15 + "px";
+
+        console.log(cardDatabase[allCards[element.id].baseID]);
+        cardDatabase[allCards[element.id].baseID].next.forEach((upgradeID) => {
+
+            let upgrade = cardDatabase[upgradeID];
+            let upgradeCard = document.createElement("div");
+            upgradeCard.classList.add("card");
+            upgradeCard.classList.add("card--upgrade");
+            upgradeCard.top = "0px";
+            upgradeCard.left = "0px";
+
+            let newCard = {
+                element: upgradeCard,
+                cost: upgrade.cost,
+                type: upgrade.type,
+                callback: upgrade.callback,
+                playable: false,
+                baseID: upgradeID,
+                // playID: newPlayID,
+                parent: element,
+                parentID: element.id,
+            };
+
+            upgradeCard.addEventListener("click", () => {
+                Upgrade(element, newCard);
+            });
+
+
+            upgradeContainer.appendChild(upgradeCard);
+
+            // Add info based on card stats
+
+            // Add onclick function calling Upgrade()
+
+            upgradeMenuOpen = true;
+            curUpgradeElement = {container: upgradeContainer, element: element};
+        });
+    }
+    else{
+        console.log("Closed menu because empty card was clicked");
+        upgradeMenuOpen = false;
+        curUpgradeElement = null;
+    }
+}
+
+function DrawCardText(element) {
+    if(!element || element.type == "resize"){
+        console.log("Tried to draw card text without and element")
+        return;
+    }
+    let childrenToRemove = element.children;
+    console.log(childrenToRemove)
+    if(childrenToRemove){
+        for(let i = 0; i < childrenToRemove.length; i++){
+            if(childrenToRemove[i].classList.contains("card__text")){
+                childrenToRemove[i].remove();
+            }
+        }
+    }
+    let card = allCards[element.id];
+    let costText = document.createElement("p");
+    costText.textContent = card.cost;
+    costText.classList.add("card__text");
+    costText.classList.add("card__text--cost");
+    element.appendChild(costText);
+
+    let textArray = [];
+    textArray.push(costText);
+    allCards[element.id].textChildren = textArray;
+}
+
+window.onresize = DrawUpgradeUI;
 
 // Reminder: When an upgrade card is clicked it triggers the click event on the parent card as well, closing the card menu
 function SelectCard(element) {
     // Restructure
 
-    if(element.parentElement.parentElement.classList.contains("card--playable")) return;
-    if(curUpgradeCards){
-        curUpgradeCards[0].parentElement.parentElement.classList.add("card--playable__hover");
-        for(let i = 0; i < curUpgradeCards.length; i++){
-            curUpgradeCards[i].classList.add("hidden");
-        }
-        if(curUpgradeCards[0].parentElement.parentElement == element){
-            curUpgradeCards = null;
-            return;
-        }
-    }
+    DrawUpgradeUI(element);
 
-    element.classList.remove("card--playable__hover")
-    let children = element.children[0].children;
-    for(let i = 0; i < children.length; i++){
-        children[i].classList.remove("hidden");
-    }
-    curUpgradeCards = children;
+
+    // OLD 
+
+    // if(element.parentElement.parentElement.classList.contains("card--playable")) return;
+    // if(curUpgradeCards){
+    //     curUpgradeCards[0].parentElement.parentElement.classList.add("card--playable__hover");
+    //     for(let i = 0; i < curUpgradeCards.length; i++){
+    //         curUpgradeCards[i].classList.add("hidden");
+    //     }
+    //     if(curUpgradeCards[0].parentElement.parentElement == element){
+    //         curUpgradeCards = null;
+    //         return;
+    //     }
+    // }
+
+    // element.classList.remove("card--playable__hover")
+    // let children = element.children[0].children;
+    // for(let i = 0; i < children.length; i++){
+    //     children[i].classList.remove("hidden");
+    // }
+    // curUpgradeCards = children;
 }
 
+// Make sure you only move once per turn
 function Move(direction) {
     if(!canMove) return;
     positions[playerPosition].hasPlayer = false;

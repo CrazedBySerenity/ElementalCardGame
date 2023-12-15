@@ -152,7 +152,7 @@ body {
 }
 
 .board {
-    width: var(--card-width);
+    width: calc(var(--card-width) + var(--card-margin) + var(--card-hand-offset));
     height: var(--card-height);
     background-color: rgba(72, 243, 112, 0.688);
     border-radius: 15px;
@@ -192,6 +192,10 @@ body {
 }
 
 .card-container--upgrade {
+    position: absolute;
+    height: 80px;
+    /* background-color: rgba(255, 0, 0, 0.11); */
+
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -226,14 +230,15 @@ body {
 }
 
 .card--playable:hover {
-    background-color: rgb(255, 255, 221);
+    filter: brightness(120%);
+    /* background-color: rgb(255, 255, 221); */
 }
 
 .card--upgrade {
     pointer-events: all;
 
     background-color: rgb(255, 82, 102);
-    transform: translateY(calc((var(--card-height) + var(--card-upgrade-offset)) * -1));
+    transform: translateY(calc(var(--card-upgrade-offset) * -1));
 }
 
 .card--upgrade:hover {

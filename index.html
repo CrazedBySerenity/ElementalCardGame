@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="index.css">
     <title>Elemental card game</title>
 </head>
-<body>
+<body id="body">
     <div class="movement-area visible">
         <div class="movement-area__position visible">
 
@@ -28,30 +28,9 @@
     <div class="hand-board__container">
         <div class="hand--playable visible drop-zone">
             <div class="card card--fire card--playable visible" onclick="SelectCard(this)" draggable="true">
-                <div class="card-container--upgrade visible">
-                    <div class="card card--upgrade hidden" onclick="Upgrade(this, 2)">
-        
-                    </div>
-                    <div class="card card--upgrade hidden" onclick="Upgrade(this, 2)">
-        
-                    </div>
-                    <div class="card card--upgrade hidden" onclick="Upgrade(this, 2)">
-        
-                    </div>
-                </div>
+
             </div>
             <div class="card card--earth card--playable visible" onclick="SelectCard(this)" draggable="true">
-                <div class="card-container--upgrade visible">
-                    <div class="card card--upgrade hidden" onclick="Upgrade(this, 5)">
-        
-                    </div>
-                    <div class="card card--upgrade hidden" onclick="Upgrade(this, 5)">
-        
-                    </div>
-                    <div class="card card--upgrade hidden" onclick="Upgrade(this, 5)">
-        
-                    </div>
-                </div>
             </div>
         </div>
         <div class="board__container">
