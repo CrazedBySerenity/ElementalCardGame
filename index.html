@@ -10,31 +10,63 @@
     <h2 class="header--secondary" id="turn-text">
         Your turn               
     </h2>
+
     <div class="hand-board__container">
-        <div class="movement-hand__container">
-            <div class="movement-area visible">
-                <div class="movement-area__position visible">
+        <div class="flex-column">
+            <div class="movement-hand__container">
+                <div class="hand--playable visible drop-zone" id="hand--2" style="display: none;">
+                    <div class="card card--fire card--playable visible" onclick="SelectCard(this)" draggable="true">
         
-                </div>
-                <div class="movement-area__position visible">
-                    <div class="player visible" id="player">
-                        <div class="movement-arrow movement-arrow--left visible" id="move-arrow-left" onclick="Move(-1)">
-        
-                        </div>
-                        <div class="movement-arrow movement-arrow--right visible" id="move-arrow-right" onclick="Move(1)">
-        
-                        </div>
+                    </div>
+                    <div class="card card--earth card--playable visible" onclick="SelectCard(this)" draggable="true">
                     </div>
                 </div>
-                <div class="movement-area__position visible">
-        
+                <div class="movement-area visible">
+                    <div class="movement-area__position movement-area__position--2 visible">
+            
+                    </div>
+                    <div class="movement-area__position movement-area__position--2 visible">
+                        <div class="player visible" id="player--2">
+                            <p class="health-text" id="health-text--2">Health</p>
+                            <div class="movement-arrow movement-arrow--left visible hidden" id="move-arrow-left--2" onclick="Move(-1)">
+            
+                            </div>
+                            <div class="movement-arrow movement-arrow--right visible hidden" id="move-arrow-right--2" onclick="Move(1)">
+            
+                            </div>
+                        </div>
+                    </div>
+                    <div class="movement-area__position movement-area__position--2 visible">
+            
+                    </div>
                 </div>
             </div>
-            <div class="hand--playable visible drop-zone">
-                <div class="card card--fire card--playable visible" onclick="SelectCard(this)" draggable="true">
-    
+            <div class="movement-hand__container">
+                <div class="movement-area visible">
+                    <div class="movement-area__position movement-area__position--1 visible">
+            
+                    </div>
+                    <div class="movement-area__position movement-area__position--1 visible">
+                        <div class="player visible" id="player--1">
+                            <p class="health-text" id="health-text--1">Health</p>
+                            <div class="movement-arrow movement-arrow--left visible" id="move-arrow-left--1" onclick="Move(-1)">
+            
+                            </div>
+                            <div class="movement-arrow movement-arrow--right visible" id="move-arrow-right--1" onclick="Move(1)">
+            
+                            </div>
+                        </div>
+                    </div>
+                    <div class="movement-area__position movement-area__position--1 visible">
+            
+                    </div>
                 </div>
-                <div class="card card--earth card--playable visible" onclick="SelectCard(this)" draggable="true">
+                <div class="hand--playable visible drop-zone" id="hand--1">
+                    <div class="card card--fire card--playable visible" onclick="SelectCard(this)" draggable="true">
+        
+                    </div>
+                    <div class="card card--earth card--playable visible" onclick="SelectCard(this)" draggable="true">
+                    </div>
                 </div>
             </div>
         </div>
@@ -50,7 +82,12 @@
             </btn>
         </div>
     </div>
-
+    <!-- <div class="board__btn" onclick="SwapPlayer()">
+        Swap player
+    </div>
+    <p id="curPlayerText">
+        Current player: 1
+    </p> -->
     <div class="resource-text" id="resource-text">
         
     </div>

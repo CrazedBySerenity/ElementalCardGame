@@ -1,20 +1,32 @@
 const resourceText = document.getElementById("resource-text");
-const playerElement = document.getElementById("player");
-const positionTiles = document.querySelectorAll(".movement-area__position");
-const positions = Array.prototype.map.call(positionTiles, function(element) {
-    return {
-        tile: element,
-        blocked: false,
-        blockTile: undefined,
-        hasPlayer: false,
-    };
-});
+const playerElement = [document.getElementById("player--1"), document.getElementById("player--2")]
+const positionTiles = [document.querySelectorAll(".movement-area__position--1"), document.querySelectorAll(".movement-area__position--2")]
+const positions = [
+    Array.prototype.map.call(positionTiles[0], function(element) {
+        return {
+            tile: element,
+            blocked: false,
+            blockTile: undefined,
+            hasPlayer: false,
+        };
+    }),
+    Array.prototype.map.call(positionTiles[1], function(element) {
+        return {
+            tile: element,
+            blocked: false,
+            blockTile: undefined,
+            hasPlayer: false,
+        };
+    }), 
+];
 
-const moveArrows = {"left": document.getElementById("move-arrow-left"), "right": document.getElementById("move-arrow-right")}
+const moveArrows = [{"left": document.getElementById("move-arrow-left--1"), "right": document.getElementById("move-arrow-right--1")}, {"left": document.getElementById("move-arrow-left--2"), "right": document.getElementById("move-arrow-right--2")}];
 const board = document.getElementById("board");
 const baseCards = document.getElementsByClassName("card--playable");
 const dropZones = document.getElementsByClassName("drop-zone");
 const turnText = document.getElementById("turn-text");
+const handContainer = [document.getElementById("hand--1"), document.getElementById("hand--2")]
+const healthText = [document.getElementById("health-text--1"), document.getElementById("health-text--2")];
 
 const turnTextDialogue = {
     default: "Your turn",
@@ -24,11 +36,13 @@ const turnTextDialogue = {
 }
 
 // Player variables
-let playerPosition = 1;
-let canMove = true;
+let playerPosition = [1, 1];
+let playerHealth = [10, 10];
+let canMove = true; // Unused
+let curPlayer = 0;
 
 // Add cards to cardsInPlay array when they're dropped in the corresponding container, on play, make the cards be used up and their effect be triggered
-const cardsInPlay = [];
+let cardsInPlay = [];
 
 let curDraggedElement = null;
 let curUpgradeElement = null;
@@ -42,21 +56,23 @@ const earthObjects = [];
 
 resourceText.textContent = "Resources: " + curResources;
 
-const FireEffect = () => {
-    console.log(positions[playerPosition]);
-    if(positions[playerPosition].blocked == true){
+// Doesn't get blocked by 
+function FireEffect (damage, direction) {
+    if(positions[curPlayer][playerPosition[curPlayer]].blocked == true){
         // Remove earth object
-        positions[playerPosition].blockTile.remove();
-        positions[playerPosition].blocked = false;
+        positions[curPlayer][playerPosition[curPlayer]].blockTile.remove();
+        positions[curPlayer][playerPosition[curPlayer]].blocked = false;
     }
-    else if (positions[playerPosition].hasPlayer){
+    else if (positions[GetOtherPlayer(curPlayer)][playerPosition[curPlayer]].hasPlayer){
         // Only for enemy fire
         // alert("dmg was inflicted");
+        UpdateHealth(damage, direction);
     }
 
     let newFire = document.createElement("div");
     newFire.classList.add("ability--fire");
-    positions[playerPosition].tile.appendChild(newFire);
+    newFire.classList.add("ability--fire--" + (curPlayer + 1));
+    positions[curPlayer][playerPosition[curPlayer]].tile.appendChild(newFire);
     setTimeout(() => {
         newFire.remove();
     }, 100);
@@ -65,9 +81,11 @@ const FireEffect = () => {
 const EarthEffect = () => {
     let newEarth = document.createElement("div");
     newEarth.classList.add("ability--earth");
-    positions[playerPosition].tile.appendChild(newEarth);
-    positions[playerPosition].blocked = true;
-    positions[playerPosition].blockTile = newEarth;
+    newEarth.classList.add("ability--earth--" + (curPlayer + 1));
+    let opponent = GetOtherPlayer(curPlayer);
+    positions[curPlayer][playerPosition[curPlayer]].tile.appendChild(newEarth);
+    positions[opponent][playerPosition[opponent]].blocked = true;
+    positions[opponent][playerPosition[opponent]].blockTile = newEarth;
     // Removal effect?
 }
 
@@ -76,29 +94,39 @@ const cardDatabase = {
         id: 3,
         type: "Fire",
         cost: 20,
+        description: "Shoot a basic fireball at the enemy, dealing 2 dmg",
         dmg: 2,
-        callback: FireEffect,
+        callback: () => {
+            FireEffect(2, 1);
+        },
         next: [4, 6],
     },
     4: {
         id: 4,
         type: "Fire",
+        description: "Shoot a basic fireball at the enemy, dealing 4 dmg",
         cost: 20,
         dmg: 4,
-        callback: FireEffect,
+        callback: () => {
+            FireEffect(4, 1);
+        },
         next: null,
     },
     6: {
         id: 6,
         type: "Fire",
+        description: "Shoot a two-handed fireball at the enemy, dealing 8 dmg",
         cost: 60,
         dmg: 8,
-        callback: FireEffect,
+        callback: () => {
+            FireEffect(8, 1);
+        },
         next: null,
     },
     5: {
         id: 5,
         type: "Earth",
+        description: "Put up a wall of rock, blocking enemy attacks",
         cost: 50,
         callback: EarthEffect,
         next: null,
@@ -121,6 +149,7 @@ function CardSetup(element, cardID) {
         element: element,
         cost: baseCard.cost,
         type: baseCard.type,
+        description: baseCard.description,
         callback: baseCard.callback,
         playable: false,
         baseID: cardID,
@@ -176,6 +205,8 @@ function DragAndDropSetup() {
     }
 }
 
+// Fix bugs with upgraded cards not being returned to hand
+
 function Upgrade(element, cardUpgrade) {
     let cost = cardUpgrade.cost;
     if(cardUpgrade.cost > curResources){
@@ -193,6 +224,7 @@ function Upgrade(element, cardUpgrade) {
     delete allCards[cardUpgrade.parentID];
     allCards[newPlayID] = cardUpgrade;
     allCards[newPlayID].playID = newPlayID;
+    allCards[newPlayID].element = cardUpgrade.parent;
     DrawCardText(cardUpgrade.parent);
 
     if(cardUpgrade.next){
@@ -240,7 +272,7 @@ function DrawUpgradeUI (element) {
         let rect = element.getBoundingClientRect();
         let containerRect = upgradeContainer.getBoundingClientRect();
         upgradeContainer.style.left = rect.left - containerRect.width / 2 + rect.width / 2 + "px";
-        upgradeContainer.style.top = rect.y - containerRect.height - 15 + "px";
+        upgradeContainer.style.top = rect.y - containerRect.height - 15 + ((element.getBoundingClientRect().height + 15) * curPlayer * 2) + "px";
 
         cardDatabase[allCards[element.id].baseID].next.forEach((upgradeID) => {
 
@@ -255,6 +287,7 @@ function DrawUpgradeUI (element) {
                 element: upgradeCard,
                 cost: upgrade.cost,
                 type: upgrade.type,
+                description: upgrade.description,
                 callback: upgrade.callback,
                 playable: false,
                 baseID: upgradeID,
@@ -271,6 +304,8 @@ function DrawUpgradeUI (element) {
             upgradeContainer.appendChild(upgradeCard);
 
             // Add info based on card stats
+            console.log(upgradeCard)
+            DrawCardText(newCard);
 
             upgradeMenuOpen = true;
             curUpgradeElement = {container: upgradeContainer, element: element};
@@ -285,75 +320,103 @@ function DrawUpgradeUI (element) {
 
 function DrawCardText(element) {
     if(!element || element.type == "resize"){
-        console.log("Tried to draw card text without and element")
+        console.log("Tried to draw card text without an element")
         return;
     }
     let childrenToRemove = element.children;
-    if(childrenToRemove){
+
+    if(childrenToRemove != undefined){
         for(let i = 0; i < childrenToRemove.length; i++){
+
+            // Not sure how this works, but both remove functions are needed to make sure the old description is removed after upgrading the card
+            console.log("removed an element")
+            childrenToRemove[i].remove();
             if(childrenToRemove[i].classList.contains("card__text")){
+                console.log("removed an element")
                 childrenToRemove[i].remove();
             }
         }
     }
-    let card = allCards[element.id];
+    let card;
+    if(allCards[element.id]){
+        card = allCards[element.id];
+    }
+    else{
+        card = element;
+        element = element.element;
+    }
+
     let costText = document.createElement("p");
     costText.textContent = card.cost;
     costText.classList.add("card__text");
     costText.classList.add("card__text--cost");
     element.appendChild(costText);
 
+    let descText = document.createElement("p");
+    descText.textContent = card.description;
+    console.log(card.description);
+    descText.classList.add("card__text");
+    descText.classList.add("card__text--desc");
+    element.appendChild(descText);
+
     let textArray = [];
     textArray.push(costText);
-    allCards[element.id].textChildren = textArray;
+    textArray.push(descText);
+    card.textChildren = textArray;
 }
 
 function SelectCard(element) {
     DrawUpgradeUI(element);
 }
 
+function UpdateHealth(damage, direction) {
+    let player = direction > 0 ? GetOtherPlayer(curPlayer) : curPlayer; // Set targeted player based on direction (0 or 1)
+    playerHealth[player] -= damage;
+    healthText[player].textContent = "Health: " + playerHealth[player];
+}
+
 
 function ShowMoveArrows(){
-    if(playerPosition < 1) moveArrows["left"].classList.add("hidden");
-    if(playerPosition > 1) moveArrows["right"].classList.add("hidden");
+    if(playerPosition[curPlayer] < 1) moveArrows[curPlayer]["left"].classList.add("hidden");
+    if(playerPosition[curPlayer] > 1) moveArrows[curPlayer]["right"].classList.add("hidden");
 
-    switch (playerPosition){
+    switch (playerPosition[curPlayer]){
         case 0:
-            moveArrows["left"].classList.add("hidden");
-            if(moveArrows["right"].classList.contains("hidden")){
-                moveArrows["right"].classList.remove("hidden");
+            moveArrows[curPlayer]["left"].classList.add("hidden");
+            if(moveArrows[curPlayer]["right"].classList.contains("hidden")){
+                moveArrows[curPlayer]["right"].classList.remove("hidden");
             }
             break;
         case 2:
-            moveArrows["right"].classList.add("hidden");
-            if(moveArrows["left"].classList.contains("hidden")){
-                moveArrows["left"].classList.remove("hidden");
+            moveArrows[curPlayer]["right"].classList.add("hidden");
+            if(moveArrows[curPlayer]["left"].classList.contains("hidden")){
+                moveArrows[curPlayer]["left"].classList.remove("hidden");
             }
             break;
         default:
-            if(moveArrows["right"].classList.contains("hidden")){
-                moveArrows["right"].classList.remove("hidden");
+            if(moveArrows[curPlayer]["right"].classList.contains("hidden")){
+                moveArrows[curPlayer]["right"].classList.remove("hidden");
             }
-            if(moveArrows["left"].classList.contains("hidden")){
-                moveArrows["left"].classList.remove("hidden");
+            if(moveArrows[curPlayer]["left"].classList.contains("hidden")){
+                moveArrows[curPlayer]["left"].classList.remove("hidden");
             }
             break;
     }
 }
 
 function HideMoveArrows(){
-    moveArrows["right"].classList.add("hidden");
-    moveArrows["left"].classList.add("hidden");
+    moveArrows[curPlayer]["right"].classList.add("hidden");
+    moveArrows[curPlayer]["left"].classList.add("hidden");
 }
 
 // Make sure you only move once per turn
 function Move(direction) {
     if(!canMove) return; //Deprecated
-    positions[playerPosition].hasPlayer = false;
-    playerPosition += direction;
-    if(playerPosition > positions.length - 1) playerPosition = positions.length - 1;
-    positions[playerPosition].tile.appendChild(playerElement);
-    positions[playerPosition].hasPlayer = true;
+    positions[curPlayer][playerPosition[curPlayer]].hasPlayer = false;
+    playerPosition[curPlayer] += direction;
+    if(playerPosition[curPlayer] > positions[curPlayer].length - 1) playerPosition[curPlayer] = positions[curPlayer].length - 1;
+    positions[curPlayer][playerPosition[curPlayer]].tile.appendChild(playerElement[curPlayer]);
+    positions[curPlayer][playerPosition[curPlayer]].hasPlayer = true;
     turnText.textContent = turnTextDialogue.hasMoved;
     HideMoveArrows();
 }
@@ -375,6 +438,35 @@ function TriggerEffects() {
     })
 }
 
+function GetOtherPlayer(player) {
+    if(player == 0){
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+function SwapPlayer() {
+    handContainer[curPlayer].style.display = "none";
+    curPlayer = GetOtherPlayer(curPlayer);
+    // document.getElementById("curPlayerText").textContent = "Current player: " + (curPlayer + 1);
+    handContainer[curPlayer].style.display = "flex";
+    board.parentElement.style.flexDirection = curPlayer == 0 ? "column" : "column-reverse";
+}
+
+function ReturnCards() {
+    if(cardsInPlay.length <= 0){
+        console.log("No cards in play")
+        return;
+    }
+    cardsInPlay.forEach((card) => {
+        handContainer[curPlayer].appendChild(allCards[card].element);
+
+    })
+    cardsInPlay = [];
+}
+
 
 // Implement turn order
 
@@ -387,12 +479,19 @@ function EndTurn() {
     turnText.textContent = turnTextDialogue.endOfTurn;
     HideMoveArrows();
     TriggerEffects();
+    ReturnCards();
+    DrawUpgradeUI();
+    SwapPlayer();
     StartTurn();
 }
 
 function GameSetup() {
     turnText.textContent = turnTextDialogue.default;
     DragAndDropSetup();
+    UpdateHealth(0, curPlayer);
+    UpdateHealth(0, GetOtherPlayer(curPlayer));
+    positions[curPlayer][playerPosition[curPlayer]].hasPlayer = true;
+    positions[GetOtherPlayer(curPlayer)][playerPosition[GetOtherPlayer(curPlayer)]].hasPlayer = true;
     window.onresize = DrawUpgradeUI;
 }
 GameSetup();
