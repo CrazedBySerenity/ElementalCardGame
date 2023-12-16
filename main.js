@@ -10,12 +10,18 @@ const positions = Array.prototype.map.call(positionTiles, function(element) {
     };
 });
 
-console.log(positions);
-
 const moveArrows = {"left": document.getElementById("move-arrow-left"), "right": document.getElementById("move-arrow-right")}
 const board = document.getElementById("board");
 const baseCards = document.getElementsByClassName("card--playable");
 const dropZones = document.getElementsByClassName("drop-zone");
+const turnText = document.getElementById("turn-text");
+
+const turnTextDialogue = {
+    default: "Your turn",
+    endOfTurn: "Opponenents turn",
+    startOfTurn: "Move your character",
+    hasMoved: "Play a card or end turn",
+}
 
 // Player variables
 let playerPosition = 1;
@@ -31,11 +37,6 @@ let upgradeMenuOpen = false;
 
 let curResources = 100;
 let curUpgradeCards = null;
-
-console.log(crypto.randomUUID());
-
-// Find upgradable cards, link them with an object in a list
-// Change variables within the object
 
 const earthObjects = [];
 
@@ -69,8 +70,6 @@ const EarthEffect = () => {
     positions[playerPosition].blockTile = newEarth;
     // Removal effect?
 }
-
-// 3 5 7 11 13 17 23 31
 
 const cardDatabase = {
     3: {
@@ -110,110 +109,6 @@ const cardDatabase = {
 // Replace this with a tree structure?
 const allCards = {};
 
-class CardEffect {
-    constructor(name){
-        this.name = name;
-    }
-
-    // Effect name
-    // Effect callback function
-    // Effect stats (dmg)
-    // Effect function order (Wait with this one)
-    // 
-}
-
-class CardNode {
-    constructor(data){
-        this.data = data;
-        this.next = null;
-    }
-}
-
-class CardList {
-    constructor(head = null){
-        this.head = head;
-    }
-
-    size() {
-        let count = 0; 
-        let node = this.head;
-        while (node) {
-            count++;
-            node = node.next
-        }
-        return count;
-    }
-    
-
-    clear() {
-        this.head = null;
-    }
-
-    getFirst() {
-        return this.head;
-    }
-    
-    getLast() {
-        let lastNode = this.head;
-        if (lastNode) {
-            while (lastNode.next) {
-                lastNode = lastNode.next;
-            }
-        }
-        return lastNode;
-    }
-}
-
-let card1 = new CardNode(10);
-let card2 = new CardNode(20);
-card1.next = card2;
-
-let list = new CardList(card1);
-
-for(let i = 0; i < baseCards.length; i++){
-    let curCard = baseCards[i];
-    curCard.addEventListener("dragstart", (event) => {
-        console.log(event);
-        curDraggedElement = curCard;
-        if(upgradeMenuOpen && curUpgradeElement){
-            curUpgradeElement.container.remove();
-        }
-    })
-    let id = curCard.classList.contains("card--fire") ? 3 : 5;
-    CardSetup(curCard, id);
-}
-
-for(let i = 0; i < dropZones.length; i++){
-    let curDropZone = dropZones[i];
-    curDropZone.addEventListener("dragover", (event) => {
-        event.preventDefault();
-    })
-    
-    curDropZone.addEventListener("drop", (event) => {
-        event.preventDefault();
-
-        if(curDropZone.classList.contains("board")){
-            if(cardsInPlay.indexOf(curDraggedElement.id) < 0 && cardsInPlay.length <= 0){
-                cardsInPlay.push(curDraggedElement.id);
-                curDropZone.prepend(curDraggedElement);
-                console.log(cardsInPlay);
-            }
-        }
-        else {
-            curDropZone.prepend(curDraggedElement);
-            let indexToRemove = cardsInPlay.indexOf(curDraggedElement.id);
-            if(indexToRemove >= 0) {
-                cardsInPlay.splice(indexToRemove);
-                console.log(cardsInPlay);
-            }
-        }
-        if(upgradeMenuOpen && curUpgradeElement){
-            DrawUpgradeUI(curDraggedElement);
-        }
-        curDraggedElement = null;
-    })
-}
-
 function CardSetup(element, cardID) {
     console.log("Initialised card from id: " + cardID);
     let baseCard = cardDatabase[cardID]
@@ -234,13 +129,54 @@ function CardSetup(element, cardID) {
     };
     allCards[newPlayID] = newCard;
     DrawCardText(element);
-    console.log(allCards);
+}
+
+// Add drag and drop functionality
+function DragAndDropSetup() {
+    console.log("Drag and drop set up")
+    for(let i = 0; i < baseCards.length; i++){
+        let curCard = baseCards[i];
+        curCard.addEventListener("dragstart", (event) => {
+            curDraggedElement = curCard;
+            if(upgradeMenuOpen && curUpgradeElement){
+                curUpgradeElement.container.remove();
+            }
+        })
+        let id = curCard.classList.contains("card--fire") ? 3 : 5;
+        CardSetup(curCard, id);
+    }
+    
+    for(let i = 0; i < dropZones.length; i++){
+        let curDropZone = dropZones[i];
+        curDropZone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+        })
+        
+        curDropZone.addEventListener("drop", (event) => {
+            event.preventDefault();
+    
+            if(curDropZone.classList.contains("board")){
+                if(cardsInPlay.indexOf(curDraggedElement.id) < 0 && cardsInPlay.length <= 0){
+                    cardsInPlay.push(curDraggedElement.id);
+                    curDropZone.prepend(curDraggedElement);
+                }
+            }
+            else {
+                curDropZone.prepend(curDraggedElement);
+                let indexToRemove = cardsInPlay.indexOf(curDraggedElement.id);
+                if(indexToRemove >= 0) {
+                    cardsInPlay.splice(indexToRemove);
+                }
+            }
+            if(upgradeMenuOpen && curUpgradeElement){
+                DrawUpgradeUI(curDraggedElement);
+            }
+            curDraggedElement = null;
+        })
+    }
 }
 
 function Upgrade(element, cardUpgrade) {
-    console.log(element);
-    console.log(cardUpgrade);
-
     let cost = cardUpgrade.cost;
     if(cardUpgrade.cost > curResources){
         alert("You don't have enough resources to upgrade this card");
@@ -306,7 +242,6 @@ function DrawUpgradeUI (element) {
         upgradeContainer.style.left = rect.left - containerRect.width / 2 + rect.width / 2 + "px";
         upgradeContainer.style.top = rect.y - containerRect.height - 15 + "px";
 
-        console.log(cardDatabase[allCards[element.id].baseID]);
         cardDatabase[allCards[element.id].baseID].next.forEach((upgradeID) => {
 
             let upgrade = cardDatabase[upgradeID];
@@ -337,8 +272,6 @@ function DrawUpgradeUI (element) {
 
             // Add info based on card stats
 
-            // Add onclick function calling Upgrade()
-
             upgradeMenuOpen = true;
             curUpgradeElement = {container: upgradeContainer, element: element};
         });
@@ -356,7 +289,6 @@ function DrawCardText(element) {
         return;
     }
     let childrenToRemove = element.children;
-    console.log(childrenToRemove)
     if(childrenToRemove){
         for(let i = 0; i < childrenToRemove.length; i++){
             if(childrenToRemove[i].classList.contains("card__text")){
@@ -376,46 +308,12 @@ function DrawCardText(element) {
     allCards[element.id].textChildren = textArray;
 }
 
-window.onresize = DrawUpgradeUI;
-
-// Reminder: When an upgrade card is clicked it triggers the click event on the parent card as well, closing the card menu
 function SelectCard(element) {
-    // Restructure
-
     DrawUpgradeUI(element);
-
-
-    // OLD 
-
-    // if(element.parentElement.parentElement.classList.contains("card--playable")) return;
-    // if(curUpgradeCards){
-    //     curUpgradeCards[0].parentElement.parentElement.classList.add("card--playable__hover");
-    //     for(let i = 0; i < curUpgradeCards.length; i++){
-    //         curUpgradeCards[i].classList.add("hidden");
-    //     }
-    //     if(curUpgradeCards[0].parentElement.parentElement == element){
-    //         curUpgradeCards = null;
-    //         return;
-    //     }
-    // }
-
-    // element.classList.remove("card--playable__hover")
-    // let children = element.children[0].children;
-    // for(let i = 0; i < children.length; i++){
-    //     children[i].classList.remove("hidden");
-    // }
-    // curUpgradeCards = children;
 }
 
-// Make sure you only move once per turn
-function Move(direction) {
-    if(!canMove) return;
-    positions[playerPosition].hasPlayer = false;
-    playerPosition += direction;
-    if(playerPosition > positions.length - 1) playerPosition = positions.length - 1;
-    positions[playerPosition].tile.appendChild(playerElement);
-    positions[playerPosition].hasPlayer = true;
 
+function ShowMoveArrows(){
     if(playerPosition < 1) moveArrows["left"].classList.add("hidden");
     if(playerPosition > 1) moveArrows["right"].classList.add("hidden");
 
@@ -443,13 +341,31 @@ function Move(direction) {
     }
 }
 
+function HideMoveArrows(){
+    moveArrows["right"].classList.add("hidden");
+    moveArrows["left"].classList.add("hidden");
+}
+
+// Make sure you only move once per turn
+function Move(direction) {
+    if(!canMove) return; //Deprecated
+    positions[playerPosition].hasPlayer = false;
+    playerPosition += direction;
+    if(playerPosition > positions.length - 1) playerPosition = positions.length - 1;
+    positions[playerPosition].tile.appendChild(playerElement);
+    positions[playerPosition].hasPlayer = true;
+    turnText.textContent = turnTextDialogue.hasMoved;
+    HideMoveArrows();
+}
+
+// Deprecated
 function AllowMove(){
     canMove = true;
+    ShowMoveArrows();
 }
 
 function TriggerEffects() {
     console.log("Triggering effects")
-    // Trigger card effects of cards in play
     let cardID = 0;
     console.log(allCards);
     cardsInPlay.forEach((cardID) => {
@@ -459,12 +375,24 @@ function TriggerEffects() {
     })
 }
 
-function StartTurn() {
-    earthObjects.forEach((object) => {
 
-    })
+// Implement turn order
+
+function StartTurn() {
+    turnText.textContent = turnTextDialogue.startOfTurn; 
+    ShowMoveArrows();
 }
 
 function EndTurn() {
+    turnText.textContent = turnTextDialogue.endOfTurn;
+    HideMoveArrows();
     TriggerEffects();
+    StartTurn();
 }
+
+function GameSetup() {
+    turnText.textContent = turnTextDialogue.default;
+    DragAndDropSetup();
+    window.onresize = DrawUpgradeUI;
+}
+GameSetup();
