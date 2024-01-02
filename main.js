@@ -56,7 +56,7 @@ const earthObjects = [];
 
 resourceText.textContent = "Resources: " + curResources;
 
-// Doesn't get blocked by 
+// Doesn't get blocked by friendly earth element
 function FireEffect (damage, direction) {
     if(positions[curPlayer][playerPosition[curPlayer]].blocked == true){
         // Remove earth object
@@ -76,6 +76,31 @@ function FireEffect (damage, direction) {
     setTimeout(() => {
         newFire.remove();
     }, 100);
+}
+
+function DoubleFireEffect (damage, direction) {
+    FireEffect(damage, direction);
+    let player = curPlayer;
+    setTimeout(() => {
+        if(positions[player][playerPosition[player]].blocked == true){
+            // Remove earth object
+            positions[player][playerPosition[player]].blockTile.remove();
+            positions[player][playerPosition[player]].blocked = false;
+        }
+        else if (positions[GetOtherPlayer(player)][playerPosition[player]].hasPlayer){
+            // Only for enemy fire
+            // alert("dmg was inflicted");
+            UpdateHealth(damage, GetOtherPlayer(direction));
+        }
+    
+        let newFire = document.createElement("div");
+        newFire.classList.add("ability--fire");
+        newFire.classList.add("ability--fire--" + (player + 1));
+        positions[player][playerPosition[player]].tile.appendChild(newFire);
+        setTimeout(() => {
+            newFire.remove();
+        }, 100);
+    }, 200);
 }
 
 const EarthEffect = () => {
@@ -104,22 +129,22 @@ const cardDatabase = {
     4: {
         id: 4,
         type: "Fire",
-        description: "Shoot a basic fireball at the enemy, dealing 4 dmg",
+        description: "Shoot a heavy fireball at the enemy, dealing 6 dmg",
         cost: 20,
-        dmg: 4,
+        dmg: 6,
         callback: () => {
-            FireEffect(4, 1);
+            FireEffect(6, 1);
         },
         next: null,
     },
     6: {
         id: 6,
         type: "Fire",
-        description: "Shoot a two-handed fireball at the enemy, dealing 8 dmg",
+        description: "Shoot two fireballs at the enemy, dealing 2 dmg each",
         cost: 60,
-        dmg: 8,
+        dmg: 2,
         callback: () => {
-            FireEffect(8, 1);
+            DoubleFireEffect(2, 1);
         },
         next: null,
     },
