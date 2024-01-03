@@ -56,7 +56,6 @@ const earthObjects = [];
 
 resourceText.textContent = "Resources: " + curResources;
 
-// Doesn't get blocked by friendly earth element
 function FireEffect (damage, direction) {
     if(positions[curPlayer][playerPosition[curPlayer]].blocked == true){
         // Remove earth object
@@ -109,8 +108,8 @@ const EarthEffect = () => {
     newEarth.classList.add("ability--earth--" + (curPlayer + 1));
     let opponent = GetOtherPlayer(curPlayer);
     positions[curPlayer][playerPosition[curPlayer]].tile.appendChild(newEarth);
-    positions[opponent][playerPosition[opponent]].blocked = true;
-    positions[opponent][playerPosition[opponent]].blockTile = newEarth;
+    positions[opponent][playerPosition[curPlayer]].blocked = true;
+    positions[opponent][playerPosition[curPlayer]].blockTile = newEarth;
     // Removal effect?
 }
 
