@@ -429,6 +429,10 @@ function SelectCard(element) {
 function UpdateHealth(damage, direction) {
     let player = direction > 0 ? GetOtherPlayer(curPlayer) : curPlayer; // Set targeted player based on direction (0 or 1)
     playerHealth[player] -= damage;
+    if(playerHealth[player] <= 0){
+        // End the game
+        alert("Player " + (1 + player) + " has lost" + "\nRefresh the page to restart");
+    }
     healthText[player].textContent = "Health: " + playerHealth[player];
 }
 
