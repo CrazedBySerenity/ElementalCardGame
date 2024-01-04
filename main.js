@@ -113,17 +113,24 @@ const EarthEffect = () => {
     // Removal effect?
 }
 
+function RestoreEffect(healthToRestore) {
+    UpdateHealth(healthToRestore, curPlayer);
+}
+
+function DealDamage(damage, direction) {
+    UpdateHealth(damage, direction);
+}
+
 const cardDatabase = {
     3: {
         id: 3,
         type: "Fire",
         cost: 0,
         description: "Shoot a basic fireball at the enemy, dealing 2 dmg",
-        dmg: 2,
         callback: () => {
             FireEffect(2, 1);
         },
-        next: [4, 6],
+        next: [4, 6, 8],
         base: 3,
     },
     4: {
@@ -131,7 +138,6 @@ const cardDatabase = {
         type: "Fire",
         description: "Shoot a heavy fireball at the enemy, dealing 6 dmg",
         cost: 0,
-        dmg: 6,
         callback: () => {
             FireEffect(6, 1);
         },
@@ -143,9 +149,20 @@ const cardDatabase = {
         type: "Fire",
         description: "Shoot two fireballs at the enemy, dealing 2 dmg each",
         cost: 0,
-        dmg: 2,
         callback: () => {
             DoubleFireEffect(2, 1);
+        },
+        next: null,
+        base: 3,
+    },
+    8: {
+        id: 8,
+        type: "Fire",
+        description: "Deal 8 dmg to both players",
+        cost: 0,
+        callback: () => {
+            DealDamage(8, 1);
+            DealDamage(8, 0);
         },
         next: null,
         base: 3,
@@ -156,6 +173,15 @@ const cardDatabase = {
         description: "Put up a wall of rock, blocking enemy attacks",
         cost: 0,
         callback: EarthEffect,
+        next: [7],
+        base: 5,
+    },
+    7: {
+        id: 5,
+        type: "Earth",
+        description: "Restore 3 health",
+        cost: 0,
+        callback: () => {RestoreEffect(-3)},
         next: null,
         base: 5,
     },
