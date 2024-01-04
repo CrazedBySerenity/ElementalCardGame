@@ -30,7 +30,7 @@ const healthText = [document.getElementById("health-text--1"), document.getEleme
 
 const turnTextDialogue = {
     default: "Your turn",
-    endOfTurn: "Opponenents turn",
+    endOfTurn: "Opponents turn",
     startOfTurn: "Move your character",
     hasMoved: "Play a card or end turn",
 }
@@ -49,7 +49,7 @@ let curUpgradeElement = null;
 
 let upgradeMenuOpen = false;
 
-let curResources = 100;
+let curResources = 100000;
 let curUpgradeCards = null;
 
 const earthObjects = [];
@@ -117,43 +117,47 @@ const cardDatabase = {
     3: {
         id: 3,
         type: "Fire",
-        cost: 20,
+        cost: 0,
         description: "Shoot a basic fireball at the enemy, dealing 2 dmg",
         dmg: 2,
         callback: () => {
             FireEffect(2, 1);
         },
         next: [4, 6],
+        base: 3,
     },
     4: {
         id: 4,
         type: "Fire",
         description: "Shoot a heavy fireball at the enemy, dealing 6 dmg",
-        cost: 20,
+        cost: 0,
         dmg: 6,
         callback: () => {
             FireEffect(6, 1);
         },
         next: null,
+        base: 3,
     },
     6: {
         id: 6,
         type: "Fire",
         description: "Shoot two fireballs at the enemy, dealing 2 dmg each",
-        cost: 60,
+        cost: 0,
         dmg: 2,
         callback: () => {
             DoubleFireEffect(2, 1);
         },
         next: null,
+        base: 3,
     },
     5: {
         id: 5,
         type: "Earth",
         description: "Put up a wall of rock, blocking enemy attacks",
-        cost: 50,
+        cost: 0,
         callback: EarthEffect,
         next: null,
+        base: 5,
     },
 }
 
@@ -163,9 +167,11 @@ const allCards = {};
 
 function CardSetup(element, cardID) {
     console.log("Initialised card from id: " + cardID);
-    let baseCard = cardDatabase[cardID]
+    console.log(cardID);
+    let baseCard = cardDatabase[cardID];
     if(!baseCard){
         console.log("Card could not be found based on given card-id");
+        return;
     }
     let newPlayID = crypto.randomUUID();
     element.setAttribute("id", newPlayID);
@@ -178,7 +184,7 @@ function CardSetup(element, cardID) {
         playable: false,
         baseID: cardID,
         playID: newPlayID,
-
+        base: baseCard.base,
     };
     allCards[newPlayID] = newCard;
     DrawCardText(element);
@@ -318,6 +324,7 @@ function DrawUpgradeUI (element) {
                 // playID: newPlayID,
                 parent: element,
                 parentID: element.id,
+                base: upgrade.base,
             };
 
             upgradeCard.addEventListener("click", () => {
@@ -486,7 +493,8 @@ function ReturnCards() {
     }
     cardsInPlay.forEach((card) => {
         handContainer[curPlayer].appendChild(allCards[card].element);
-
+        CardSetup(allCards[card].element, allCards[card].base);
+        delete allCards[card];
     })
     cardsInPlay = [];
 }
