@@ -30,7 +30,7 @@ const healthText = [document.getElementById("health-text--1"), document.getEleme
 
 const turnTextDialogue = {
     default: "Your turn",
-    endOfTurn: "Opponenents turn",
+    endOfTurn: "Opponents turn",
     startOfTurn: "Move your character",
     hasMoved: "Play a card or end turn",
 }
@@ -49,14 +49,13 @@ let curUpgradeElement = null;
 
 let upgradeMenuOpen = false;
 
-let curResources = 100;
+let curResources = 100000;
 let curUpgradeCards = null;
 
 const earthObjects = [];
 
 resourceText.textContent = "Resources: " + curResources;
 
-// Doesn't get blocked by friendly earth element
 function FireEffect (damage, direction) {
     if(positions[curPlayer][playerPosition[curPlayer]].blocked == true){
         // Remove earth object
@@ -109,52 +108,82 @@ const EarthEffect = () => {
     newEarth.classList.add("ability--earth--" + (curPlayer + 1));
     let opponent = GetOtherPlayer(curPlayer);
     positions[curPlayer][playerPosition[curPlayer]].tile.appendChild(newEarth);
-    positions[opponent][playerPosition[opponent]].blocked = true;
-    positions[opponent][playerPosition[opponent]].blockTile = newEarth;
+    positions[opponent][playerPosition[curPlayer]].blocked = true;
+    positions[opponent][playerPosition[curPlayer]].blockTile = newEarth;
     // Removal effect?
+}
+
+function RestoreEffect(healthToRestore) {
+    UpdateHealth(healthToRestore, curPlayer);
+}
+
+function DealDamage(damage, direction) {
+    UpdateHealth(damage, direction);
 }
 
 const cardDatabase = {
     3: {
         id: 3,
         type: "Fire",
-        cost: 20,
+        cost: 0,
         description: "Shoot a basic fireball at the enemy, dealing 2 dmg",
-        dmg: 2,
         callback: () => {
             FireEffect(2, 1);
         },
-        next: [4, 6],
+        next: [4, 6, 8],
+        base: 3,
     },
     4: {
         id: 4,
         type: "Fire",
         description: "Shoot a heavy fireball at the enemy, dealing 6 dmg",
-        cost: 20,
-        dmg: 6,
+        cost: 0,
         callback: () => {
             FireEffect(6, 1);
         },
         next: null,
+        base: 3,
     },
     6: {
         id: 6,
         type: "Fire",
         description: "Shoot two fireballs at the enemy, dealing 2 dmg each",
-        cost: 60,
-        dmg: 2,
+        cost: 0,
         callback: () => {
             DoubleFireEffect(2, 1);
         },
         next: null,
+        base: 3,
+    },
+    8: {
+        id: 8,
+        type: "Fire",
+        description: "Deal 8 dmg to both players",
+        cost: 0,
+        callback: () => {
+            DealDamage(8, 1);
+            DealDamage(8, 0);
+        },
+        next: null,
+        base: 3,
     },
     5: {
         id: 5,
         type: "Earth",
         description: "Put up a wall of rock, blocking enemy attacks",
-        cost: 50,
+        cost: 0,
         callback: EarthEffect,
+        next: [7],
+        base: 5,
+    },
+    7: {
+        id: 5,
+        type: "Earth",
+        description: "Restore 3 health",
+        cost: 0,
+        callback: () => {RestoreEffect(-3)},
         next: null,
+        base: 5,
     },
 }
 
@@ -164,9 +193,11 @@ const allCards = {};
 
 function CardSetup(element, cardID) {
     console.log("Initialised card from id: " + cardID);
-    let baseCard = cardDatabase[cardID]
+    console.log(cardID);
+    let baseCard = cardDatabase[cardID];
     if(!baseCard){
         console.log("Card could not be found based on given card-id");
+        return;
     }
     let newPlayID = crypto.randomUUID();
     element.setAttribute("id", newPlayID);
@@ -179,7 +210,7 @@ function CardSetup(element, cardID) {
         playable: false,
         baseID: cardID,
         playID: newPlayID,
-
+        base: baseCard.base,
     };
     allCards[newPlayID] = newCard;
     DrawCardText(element);
@@ -319,6 +350,7 @@ function DrawUpgradeUI (element) {
                 // playID: newPlayID,
                 parent: element,
                 parentID: element.id,
+                base: upgrade.base,
             };
 
             upgradeCard.addEventListener("click", () => {
@@ -487,7 +519,8 @@ function ReturnCards() {
     }
     cardsInPlay.forEach((card) => {
         handContainer[curPlayer].appendChild(allCards[card].element);
-
+        CardSetup(allCards[card].element, allCards[card].base);
+        delete allCards[card];
     })
     cardsInPlay = [];
 }

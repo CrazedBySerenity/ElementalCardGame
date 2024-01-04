@@ -9,7 +9,7 @@
 
     /* Fix the colors */
 
-    --card-upgrade-color: rgb(255, 82, 102);
+    --card-upgrade-color: rgb(171, 168, 168);
 
     --fire-color: #ea6060;
     --fire-ability-color: #e02059;
@@ -301,7 +301,7 @@ body {
     flex-direction: row;
     justify-content: space-around;
     
-    width: calc((var(--card-width) + var(--card-margin)) * 3);
+    width: calc((var(--card-width) + var(--card-margin)) * 5);
 
     pointer-events: none;
 }
