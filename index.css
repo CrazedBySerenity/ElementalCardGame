@@ -11,7 +11,7 @@
 
     --card-upgrade-color: #B0A695;
 
-    --fire-color: #CD5C08;
+    --fire-color: #ff9544;
     --fire-ability-color: #b53e07;
     --fire-ability-range-min: -75px;
     --fire-ability-range-max: -200px;
@@ -225,15 +225,18 @@ body {
 }
 
 .board__container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-columns: calc((var(--card-width) + (var(--card-padding) + var(--card-margin)) * 2)) calc(var(--card-width) + (var(--card-padding) + var(--card-margin)) * 2);
+    grid-template-rows: calc((var(--card-height) + (var(--card-padding) + var(--card-margin)) * 2)) calc((var(--card-height) + (var(--card-padding) + var(--card-margin)) * 2) * 2 / 3);
+    gap: 5px;
+
+    margin-left: 20px;
 }
 
 .board {
     position: relative;
-    width: var(--card-width);
-    height: var(--card-height);
+    width: 100%;
+    height: 100%;
     background-color: var(--board-color);
     border-radius: 15px;
 
@@ -243,6 +246,15 @@ body {
     justify-content: flex-end;
 
     box-shadow: rgb(53, 56, 59, 0.5) 3px 3px 6px 1px inset, rgba(50, 50, 50, 0.5) -3px -3px 6px 1px inset;
+}
+
+#board {
+    filter: brightness(95%);
+}
+
+.board--bottom {
+    position: relative;
+    border-radius: 15px 15px 0px 0px;
 }
 
 /* .board:before {
@@ -274,11 +286,14 @@ body {
 .board__btn {
     background-color: var(--end-turn-btn-color);
     color: var(--end-turn-txt-color);
-    padding: 10px;
+    padding: 10px 0px 10px 0px;
     border-radius: 15px;
 
-    width: 80px;
-    margin: 10px;
+    grid-column: 1 / 3;
+
+    width: 100%;
+
+    margin-top: 10px;
 
     user-select: none;
 

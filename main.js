@@ -290,6 +290,7 @@ function Upgrade(element, cardUpgrade) {
     else{
         DrawUpgradeUI(cardUpgrade.parent);
     }
+    EndTurn();
 }
 
 function DrawUpgradeUI (element) {
