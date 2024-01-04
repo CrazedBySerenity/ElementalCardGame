@@ -114,7 +114,7 @@ const EarthEffect = () => {
 }
 
 function RestoreEffect(healthToRestore) {
-    UpdateHealth(healthToRestore, curPlayer);
+    UpdateHealth(healthToRestore, 0);
 }
 
 function DealDamage(damage, direction) {
