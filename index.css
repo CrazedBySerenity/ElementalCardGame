@@ -25,10 +25,10 @@
     --board-divider-color: #6A9C89;
     --player-color: #6A9C89;
     --hand-color: #C1D8C3;
-    --end-turn-btn-color: #EBE3D5;
-    --end-turn-txt-color: black;
-    --movement-arrow-color-active: red;
-    --movement-arrow-color-inactive: rgba(255, 59, 59, 0.436);
+    --end-turn-btn-color: #C63D2F;
+    --end-turn-txt-color: white;
+    --movement-arrow-color-active: #ff311a;
+    --movement-arrow-color-inactive: rgba(255, 59, 59, 0.499);
     --movement-area-color: #776B5D;
     --movement-position-color: #B0A695;
 }
